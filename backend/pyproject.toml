@@ -7,3 +7,11 @@ requires-python = ">=3.13"
 dependencies = [
     "functions-framework>=3.10.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
