@@ -1,5 +1,5 @@
 import random
-from domain.entities import Place
+from src.domain.entities import Place
 from .route import Route
 
 
