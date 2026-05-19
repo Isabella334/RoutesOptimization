@@ -1,4 +1,4 @@
-from src.domain.entities import Place
+from domain.entities import Place
 from .population import Population
 from .selection import TournamentSelection
 from .crossover import OrderedCrossover

@@ -1,4 +1,4 @@
-from src.domain.entities import Place
+from domain.entities import Place
 
 class Route:
     def __init__(self, route: list[Place], closed: bool = True):
