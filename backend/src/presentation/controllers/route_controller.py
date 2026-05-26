@@ -1,8 +1,8 @@
 from fastapi import APIRouter
-from presentation.dtos.optimize_route_request import OptimizeRouteRequest
-from presentation.dtos.optimize_route_response import OptimizeRouteResponse, PlaceResultDTO
-from use_cases.genetic_algorithm.genetic_algorithm import GeneticAlgorithm
-from domain.entities import Place, Coordinates
+from ..dtos.optimize_route_request import OptimizeRouteRequest
+from ..dtos.optimize_route_response import OptimizeRouteResponse, PlaceResultDTO
+from use_cases import GeneticAlgorithm
+from domain import Place, Coordinates
 
 router = APIRouter(prefix="/routes")
 

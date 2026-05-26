@@ -1,4 +1,4 @@
-from domain.entities import Place
+from domain import Place
 from .population import Population
 from .selection import TournamentSelection
 from .crossover import OrderedCrossover
@@ -27,7 +27,7 @@ class GeneticAlgorithm:
 
         best_route = population.get_best_route()
 
-        for generation in range(self.generations):
+        for _ in range(self.generations):
             new_routes: list[Route] = []
             if self.elitism:
                 new_routes.append(best_route.copy())
@@ -38,8 +38,10 @@ class GeneticAlgorithm:
                 child = self.crossover.crossover(parent1, parent2)
                 child = self.mutation.mutate(child)
                 new_routes.append(child)
+
             population.routes = new_routes
             generation_best = population.get_best_route()
+
             if generation_best.fitness > best_route.fitness:
                 best_route = generation_best
 

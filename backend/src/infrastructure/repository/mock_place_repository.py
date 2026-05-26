@@ -1,5 +1,5 @@
-from domain.entities import Coordinates, Place
-from infrastructure.repository.place_repository import PlaceRepository
+from domain import Coordinates, Place
+from .place_repository import PlaceRepository
 
 class MockPlaceRepository(PlaceRepository):
     def get_places(self, query: str) -> list[Place]:
