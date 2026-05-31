@@ -36,7 +36,8 @@ export default function App() {
 
     try {
       const { calcularRuta } = await import('./services/cloudFunction');
-      const result = await calcularRuta(locations, closed, startIndex);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (calcularRuta as any)(locations, closed, startIndex);
       setOptimizedRoute(result.orderedRoute);
       setTotalDistanceKm(result.totalDistanceKm);
     } catch (err) {
