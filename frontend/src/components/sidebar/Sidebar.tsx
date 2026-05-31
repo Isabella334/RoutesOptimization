@@ -3,7 +3,6 @@ import type { Place } from '../../types';
 import styles from './Sidebar.module.css';
 
 const MAX_LOCATIONS = 15;
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8000';
 
 interface NominatimResult {
   display_name: string;
