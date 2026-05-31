@@ -54,7 +54,7 @@
   2. Scroll hasta "Your apps" → click **</>** (Web)
   3. App nickname: `routes-frontend` → **Register app**
   4. Copiar el objeto `firebaseConfig` (lo necesitas en el siguiente task)
-  5. **No** instalar Firebase SDK desde aquí (lo haremos con npm)
+  5. **No** instalar Firebase SDK desde aquí (lo haremos con pnpm)
 
 - [ ] **Step 4: Anotar el Project ID**
 
@@ -69,16 +69,16 @@
 
 ## Task 2: Instalar Firebase SDK en el frontend
 
-**Archivos:** `frontend/package.json` (modificado automáticamente por npm)
+**Archivos:** `frontend/package.json` (modificado automáticamente por pnpm)
 
 - [ ] **Step 1: Instalar firebase**
 
   ```bash
   cd frontend
-  npm install firebase
+  pnpm add firebase
   ```
 
-  Salida esperada: `added X packages` sin errores.
+  Salida esperada: `Done in Xs` sin errores.
 
 - [ ] **Step 2: Crear `frontend/.env` con el firebaseConfig**
 
@@ -97,7 +97,7 @@
 - [ ] **Step 3: Commit**
 
   ```bash
-  git add frontend/package.json frontend/package-lock.json
+  git add frontend/package.json frontend/pnpm-lock.yaml
   git commit -m "feat(frontend): install Firebase SDK"
   ```
 
@@ -167,7 +167,7 @@
 
   ```bash
   cd frontend
-  npm run build 2>&1 | head -30
+  pnpm build 2>&1 | head -30
   ```
 
   Salida esperada: build exitoso o errores de TypeScript (no de módulos de Firebase).
@@ -313,7 +313,7 @@
 - [ ] **Step 2: Verificar build**
 
   ```bash
-  cd frontend && npm run build 2>&1 | head -20
+  cd frontend && pnpm build 2>&1 | head -20
   ```
 
   Esperado: sin errores nuevos.
@@ -488,7 +488,7 @@
 - [ ] **Step 3: Ejecutar el dev server y verificar el flujo de login**
 
   ```bash
-  cd frontend && npm run dev
+  cd frontend && pnpm dev
   ```
 
   Abrir `http://localhost:5173`. Debe aparecer la pantalla de Login (no el mapa). Probar el login con Google. Al iniciar sesión, debe aparecer el mapa con el email del usuario en la barra superior.
@@ -936,7 +936,7 @@
 - [ ] **Step 3: Probar la integración completa**
 
   ```bash
-  cd frontend && npm run dev
+  cd frontend && pnpm dev
   ```
 
   Flujo a verificar:
