@@ -27,10 +27,13 @@ from domain import Place, Coordinates
 from use_cases import GeneticAlgorithm
 
 # Inicializar firebase_admin una sola vez.
+# Se pasa el project ID explícitamente porque el proyecto GCP (tough-electron-388917)
+# puede ser distinto al proyecto Firebase (routesoptimizer-53444).
 # En Cloud Run usa Application Default Credentials automáticamente.
-# En local requiere GOOGLE_APPLICATION_CREDENTIALS apuntando al JSON de la service account.
 if not firebase_admin._apps:
-    firebase_admin.initialize_app()
+    firebase_admin.initialize_app(options={
+        "projectId": os.environ.get("FIREBASE_PROJECT_ID", "routesoptimizer-53444")
+    })
 
 app = FastAPI(title="Route Optimizer API")
 
