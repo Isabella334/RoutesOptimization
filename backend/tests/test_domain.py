@@ -16,11 +16,11 @@ class TestCoordinates:
         assert abs(a.distance_to(b) - b.distance_to(a)) < 0.001
 
     def test_distance_known_value(self):
-        """Guatemala City a Quetzaltenango ≈ 120 km en línea recta."""
+        """Guatemala City a Quetzaltenango ≈ 110 km en línea recta."""
         guatemala = Coordinates(14.6349, -90.5069)
         xela = Coordinates(14.8333, -91.5167)
         dist = guatemala.distance_to(xela)
-        assert 115 < dist < 130
+        assert 105 < dist < 120
 
     def test_distance_short_range(self):
         """Dos puntos cercanos dentro de Guatemala (~5 km)."""

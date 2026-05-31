@@ -155,9 +155,18 @@ async def optimize(request: Request):
     if not _validar_radio(places):
         return JSONResponse({"error": "Algún par de destinos supera los 100 km"}, status_code=400)
 
-    # 4. Correr el algoritmo genético
+    # 4. Construir matriz de distancias reales y correr el GA
+    # La matriz se precomputa una sola vez; el GA la usa en cada evaluación de fitness.
+    dist_matrix = None
+    try:
+        from distance_matrix import construir_matriz
+        dist_matrix = construir_matriz(places)
+    except Exception as e:
+        # Si la API no está configurada o falla, el GA usa haversine como fallback
+        print(f"[WARN] Distance Matrix API no disponible, usando haversine: {e}")
+
     ga = GeneticAlgorithm()
-    best_route = ga.run(places, closed=closed)
+    best_route = ga.run(places, closed=closed, dist_matrix=dist_matrix)
 
     # fitness = 1 / distancia_total → distancia = 1 / fitness
     total_distance_km = round(1 / best_route.fitness, 2)

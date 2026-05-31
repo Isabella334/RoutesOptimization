@@ -1,9 +1,20 @@
+"""
+Orquestador del algoritmo genético para TSP.
+
+Parámetros elegidos:
+- population_size=100: balance entre diversidad y tiempo de cómputo
+- generations=500: suficiente para convergencia con ≤15 destinos
+- mutation_rate=0.01: baja para no destruir buenas soluciones
+- tournament_size=5: presión selectiva moderada
+- elitism=True: preserva la mejor solución entre generaciones
+"""
 from domain import Place
 from .population import Population
 from .selection import TournamentSelection
 from .crossover import OrderedCrossover
 from .mutation import SwapMutation
 from .route import Route
+
 
 class GeneticAlgorithm:
     def __init__(
@@ -17,18 +28,29 @@ class GeneticAlgorithm:
         self.population_size = population_size
         self.generations = generations
         self.elitism = elitism
-
         self.selection = TournamentSelection(tournament_size=tournament_size)
         self.crossover = OrderedCrossover()
         self.mutation = SwapMutation(mutation_rate=mutation_rate)
 
-    def run(self, places: list[Place], closed: bool = True) -> Route:
-        population = Population(places, self.population_size, closed)
+    def run(
+        self,
+        places: list[Place],
+        closed: bool = True,
+        dist_matrix: list[list[float]] | None = None,
+    ) -> Route:
+        """
+        Ejecuta el GA y retorna la mejor ruta encontrada.
 
+        Si dist_matrix es None, usa haversine para calcular distancias.
+        Si dist_matrix es una matriz NxN, usa distancias reales de carretera.
+        """
+        population = Population(places, self.population_size, closed, dist_matrix)
         best_route = population.get_best_route()
 
         for _ in range(self.generations):
             new_routes: list[Route] = []
+
+            # Elitismo: copia el mejor individuo para no perderlo por azar
             if self.elitism:
                 new_routes.append(best_route.copy())
 

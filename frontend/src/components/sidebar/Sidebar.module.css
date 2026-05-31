@@ -328,6 +328,15 @@
   border-color: rgba(248, 113, 113, 0.3);
 }
 
+.optimizedLabel {
+  margin: 4px 16px 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .optimizedBanner {
   display: flex;
   align-items: center;

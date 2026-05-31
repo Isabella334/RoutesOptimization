@@ -1,26 +1,32 @@
+"""Población inicial del GA: N permutaciones aleatorias de los destinos."""
 import random
 from domain import Place
 from .route import Route
 
 
 class Population:
-    def __init__(self, places: list[Place], population_size: int, closed: bool = True):
-        self.routes = self._generate_population(places, population_size, closed)
+    def __init__(
+        self,
+        places: list[Place],
+        population_size: int,
+        closed: bool = True,
+        dist_matrix: list[list[float]] | None = None,
+    ):
+        self.routes = self._generate_population(places, population_size, closed, dist_matrix)
 
     def _generate_population(
         self,
         places: list[Place],
         population_size: int,
-        closed: bool
+        closed: bool,
+        dist_matrix: list[list[float]] | None,
     ) -> list[Route]:
-
-        population = []
-
-        for _ in range(population_size):
-            shuffled = random.sample(places, len(places))
-            population.append(Route(shuffled, closed))
-
-        return population
+        """Genera population_size rutas aleatorias como punto de partida del GA."""
+        return [
+            Route(random.sample(places, len(places)), closed, dist_matrix)
+            for _ in range(population_size)
+        ]
 
     def get_best_route(self) -> Route:
-        return max(self.routes, key=lambda route: route.fitness)
+        """Retorna la ruta con mayor fitness (menor distancia) de la generación actual."""
+        return max(self.routes, key=lambda r: r.fitness)

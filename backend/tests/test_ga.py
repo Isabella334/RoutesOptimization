@@ -140,14 +140,15 @@ class TestSwapMutation:
 
     def test_mutated_fitness_is_recalculated(self):
         places = make_places(5)
-        route = Route(places[:], closed=True)
+        route = Route(places[:], closed=False)  # abierta para simplificar el cálculo
         mut = SwapMutation(mutation_rate=1.0)
         mutated = mut.mutate(route)
-        # El fitness debe ser consistente con la nueva ruta
-        expected = 1 / sum(
+        # El fitness debe ser consistente con la nueva ruta (solo pares consecutivos)
+        total = sum(
             mutated.route[i].distance_to(mutated.route[i + 1])
             for i in range(len(mutated.route) - 1)
         )
+        expected = 1 / total
         assert abs(mutated.fitness - expected) < 1e-9
 
 

@@ -113,7 +113,6 @@ export default function Login() {
 const styles = {
   overlay: {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    height: '100vh', background: '#f0f2f5',
   },
   card: {
     background: '#fff', padding: '2rem', borderRadius: '12px',

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -21,7 +21,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadowPng,
 });
 
-// Numbered marker factory
+// Crea un ícono circular numerado para cada marcador
 function createNumberedIcon(n: number, isOptimized: boolean): L.DivIcon {
   const bg = isOptimized ? '#10b981' : '#ff3b22';
   return L.divIcon({
@@ -45,6 +45,7 @@ function createNumberedIcon(n: number, isOptimized: boolean): L.DivIcon {
   });
 }
 
+// Decodifica la geometría comprimida que devuelve OSRM (formato Polyline5)
 function decodePolyline(str: string, precision = 5): [number, number][] {
   let index = 0, lat = 0, lng = 0;
   const coords: [number, number][] = [];
@@ -72,6 +73,7 @@ function decodePolyline(str: string, precision = 5): [number, number][] {
   return coords;
 }
 
+// Ajusta el zoom del mapa para mostrar todos los puntos visibles
 function BoundsFitter({ points }: { points: Place[] }) {
   const map = useMap();
   const prevLen = useRef(0);
@@ -86,21 +88,14 @@ function BoundsFitter({ points }: { points: Place[] }) {
   return null;
 }
 
+// Obtiene la ruta real por carretera desde OSRM (gratuito, sin API key)
 function useOsrmRoute(waypoints: Place[]) {
   const [geometry, setGeometry] = useState<[number, number][]>([]);
-  const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
-    if (waypoints.length < 2) {
-      setGeometry([]);
-      return;
-    }
-
+    if (waypoints.length < 2) { setGeometry([]); return; }
     const coords = waypoints.map((p) => `${p.lng},${p.lat}`).join(';');
-    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full`;
-
-    setFetching(true);
-    fetch(url)
+    fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full`)
       .then((r) => r.json())
       .then((data) => {
         if (data.code === 'Ok' && data.routes.length > 0) {
@@ -109,27 +104,29 @@ function useOsrmRoute(waypoints: Place[]) {
           setGeometry([]);
         }
       })
-      .catch((err) => console.error('[OSRM] routing error:', err))
-      .finally(() => setFetching(false));
+      .catch((err) => console.error('[OSRM] routing error:', err));
   }, [waypoints]);
 
-  return { geometry, fetching };
+  return geometry;
 }
-
-import { useState } from 'react';
 
 interface MapProps {
   locations: Place[];
   optimizedRoute: Place[];
+  closed?: boolean;
 }
 
 const GUATEMALA_CITY: [number, number] = [14.6349, -90.5069];
 
-export default function MapView({ locations, optimizedRoute }: MapProps) {
+export default function MapView({ locations, optimizedRoute, closed = true }: MapProps) {
   const isOptimized = optimizedRoute.length > 0;
   const displayPoints = isOptimized ? optimizedRoute : locations;
 
-  const { geometry } = useOsrmRoute(isOptimized ? optimizedRoute : []);
+  // Para ruta cerrada, añadimos el primer punto al final para que OSRM calcule el regreso
+  const osrmWaypoints = isOptimized
+    ? (closed && optimizedRoute.length > 1 ? [...optimizedRoute, optimizedRoute[0]] : optimizedRoute)
+    : [];
+  const geometry = useOsrmRoute(osrmWaypoints);
 
   return (
     <MapContainer
@@ -150,24 +147,19 @@ export default function MapView({ locations, optimizedRoute }: MapProps) {
           icon={createNumberedIcon(idx + 1, isOptimized)}
         >
           <Popup>
-            <strong>
-              {isOptimized ? `Parada #${idx + 1}` : `Destino ${idx + 1}`}
-            </strong>
+            <strong>{isOptimized ? `Parada #${idx + 1}` : `Destino ${idx + 1}`}</strong>
             <br />
             <span style={{ fontSize: '12px' }}>{place.address}</span>
           </Popup>
         </Marker>
       ))}
 
+      {/* Polilínea de la ruta optimizada por carretera */}
       {geometry.length > 0 && (
-        <Polyline
-          positions={geometry}
-          color="#10b981"
-          weight={5}
-          opacity={0.85}
-        />
+        <Polyline positions={geometry} color="#10b981" weight={5} opacity={0.85} />
       )}
 
+      {/* Polilínea punteada entre destinos sin optimizar */}
       {!isOptimized && locations.length >= 2 && (
         <Polyline
           positions={locations.map((p) => [p.lat, p.lng])}

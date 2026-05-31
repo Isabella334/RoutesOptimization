@@ -33,8 +33,6 @@ export default function App() {
     setTotalDistanceKm(null);
 
     try {
-      // Import dinámico para evitar que cloudFunction.js se ejecute antes de que
-      // Firebase esté inicializado
       const { calcularRuta } = await import('./services/cloudFunction');
       const result = await calcularRuta(locations, closed);
       setOptimizedRoute(result.orderedRoute);
@@ -61,9 +59,21 @@ export default function App() {
     );
   }
 
-  // Sin sesión activa → pantalla de login
+  // Sin sesión activa → mapa de fondo blureado + login encima
   if (user === null) {
-    return <Login />;
+    return (
+      <div style={{ position: 'relative', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+        <MapView locations={[]} optimizedRoute={[]} />
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 1000,
+          backdropFilter: 'blur(6px)',
+          backgroundColor: 'rgba(0,0,0,0.35)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Login />
+        </div>
+      </div>
+    );
   }
 
   // Con sesión → app completa
@@ -78,7 +88,6 @@ export default function App() {
         loading={loading}
       />
       <div style={{ flex: 1, position: 'relative' }}>
-        {/* Barra superior con info del usuario, toggle de modo y distancia */}
         <div style={topBarStyle}>
           <span style={{ fontSize: '0.85rem', color: '#555' }}>
             {user.email ?? user.displayName}
@@ -87,7 +96,7 @@ export default function App() {
             <input
               type="checkbox"
               checked={closed}
-              onChange={e => setClosed(e.target.checked)}
+              onChange={e => { setClosed(e.target.checked); handleClearRoute(); }}
             />
             Ruta cerrada
           </label>
@@ -100,7 +109,7 @@ export default function App() {
             Cerrar sesión
           </button>
         </div>
-        <MapView locations={locations} optimizedRoute={optimizedRoute} />
+        <MapView locations={locations} optimizedRoute={optimizedRoute} closed={closed} />
       </div>
     </div>
   );

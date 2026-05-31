@@ -3,6 +3,17 @@ import type { Place } from '../../types';
 import styles from './Sidebar.module.css';
 
 const MAX_LOCATIONS = 15;
+const MAX_RADIUS_KM = 100;
+
+/** Distancia en km entre dos puntos usando haversine (línea recta). */
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
 
 interface NominatimResult {
   display_name: string;
@@ -59,7 +70,7 @@ export default function Sidebar({
 
   const isOptimized = optimizedRoute.length > 0;
   const canAdd = locations.length < MAX_LOCATIONS;
-  const canOptimize = locations.length >= 2 && !loading && !isOptimized;
+  const canOptimize = locations.length >= 2 && !loading;
 
   const handleAdd = async () => {
     if (!query.trim() || !canAdd) return;
@@ -72,7 +83,18 @@ export default function Sidebar({
         setError('No se encontró el lugar. Intenta ser más específico.');
         return;
       }
+
+      // Validar que el nuevo destino esté dentro del radio máximo respecto a los existentes
+      const tooFar = locations.find(
+        (existing) => haversineKm(existing.lat, existing.lng, place.lat, place.lng) > MAX_RADIUS_KM
+      );
+      if (tooFar) {
+        setError(`"${place.name}" está a más de ${MAX_RADIUS_KM} km de "${tooFar.name}". Todos los destinos deben estar dentro de ${MAX_RADIUS_KM} km entre sí.`);
+        return;
+      }
+
       setLocations((prev) => [...prev, place]);
+      onClearRoute();
       setQuery('');
     } catch {
       setError('Error al buscar el lugar. Verifica tu conexión.');
@@ -145,23 +167,20 @@ export default function Sidebar({
         </div>
       </div>
 
-      <ul className={styles.list}>
-        {locations.map((loc, idx) => {
-          const isRouted = isOptimized;
-          const routeIdx = isRouted
-            ? optimizedRoute.findIndex(
-                (p) => p.lat === loc.lat && p.lng === loc.lng
-              )
-            : -1;
+      {isOptimized && (
+        <p className={styles.optimizedLabel}>Ruta optimizada</p>
+      )}
 
+      <ul className={styles.list}>
+        {/* Si hay ruta optimizada, mostrar en ese orden; si no, en el orden de entrada */}
+        {(isOptimized ? optimizedRoute : locations).map((loc, idx) => {
+          const originalIdx = locations.findIndex(
+            (p) => p.lat === loc.lat && p.lng === loc.lng
+          );
           return (
             <li key={`${loc.lat}-${loc.lng}-${idx}`} className={styles.item}>
-              <span
-                className={`${styles.badge} ${
-                  isRouted ? styles.badgeGreen : styles.badgeBlue
-                }`}
-              >
-                {isRouted && routeIdx >= 0 ? routeIdx + 1 : idx + 1}
+              <span className={`${styles.badge} ${isOptimized ? styles.badgeGreen : styles.badgeBlue}`}>
+                {idx + 1}
               </span>
               <span className={styles.itemText} title={loc.address}>
                 {loc.name || loc.address.split(',')[0]}
@@ -171,9 +190,9 @@ export default function Sidebar({
               </span>
               <button
                 className={styles.removeBtn}
-                onClick={() => handleRemove(idx)}
+                onClick={() => handleRemove(originalIdx >= 0 ? originalIdx : idx)}
                 title="Eliminar"
-                disabled={loading}
+                disabled={loading || isOptimized}
               >
                 ×
               </button>
@@ -183,28 +202,21 @@ export default function Sidebar({
       </ul>
 
       <div className={styles.actions}>
-        {!isOptimized ? (
-          <button
-            className={styles.primaryBtn}
-            onClick={onCalculateRoute}
-            disabled={!canOptimize}
-          >
-            {loading ? (
-              <span className={styles.spinner}>Calculando...</span>
-            ) : (
-              'Optimizar ruta'
-            )}
-          </button>
-        ) : (
-          <div className={styles.optimizedBanner}>
-            <span>Ruta optimizada</span>
-            <button className={styles.resetBtn} onClick={handleClear}>
-              Reiniciar
-            </button>
-          </div>
-        )}
+        <button
+          className={styles.primaryBtn}
+          onClick={onCalculateRoute}
+          disabled={!canOptimize}
+        >
+          {loading ? (
+            <span className={styles.spinner}>Calculando...</span>
+          ) : isOptimized ? (
+            'Re-optimizar ruta'
+          ) : (
+            'Optimizar ruta'
+          )}
+        </button>
 
-        {locations.length > 0 && !isOptimized && (
+        {locations.length > 0 && (
           <button
             className={styles.secondaryBtn}
             onClick={handleClear}
