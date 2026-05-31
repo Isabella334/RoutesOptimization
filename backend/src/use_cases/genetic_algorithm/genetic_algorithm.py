@@ -1,13 +1,4 @@
-"""
-Orquestador del algoritmo genético para TSP.
-
-Parámetros elegidos:
-- population_size=100: balance entre diversidad y tiempo de cómputo
-- generations=500: suficiente para convergencia con ≤15 destinos
-- mutation_rate=0.01: baja para no destruir buenas soluciones
-- tournament_size=5: presión selectiva moderada
-- elitism=True: preserva la mejor solución entre generaciones
-"""
+from typing import Callable
 from domain import Place
 from .population import Population
 from .selection import TournamentSelection
@@ -36,21 +27,13 @@ class GeneticAlgorithm:
         self,
         places: list[Place],
         closed: bool = True,
-        dist_matrix: list[list[float]] | None = None,
+        dist_fn: Callable[[Place, Place], float] | None = None,
     ) -> Route:
-        """
-        Ejecuta el GA y retorna la mejor ruta encontrada.
-
-        Si dist_matrix es None, usa haversine para calcular distancias.
-        Si dist_matrix es una matriz NxN, usa distancias reales de carretera.
-        """
-        population = Population(places, self.population_size, closed, dist_matrix)
+        population = Population(places, self.population_size, closed, dist_fn)
         best_route = population.get_best_route()
 
         for _ in range(self.generations):
             new_routes: list[Route] = []
-
-            # Elitismo: copia el mejor individuo para no perderlo por azar
             if self.elitism:
                 new_routes.append(best_route.copy())
 
@@ -63,7 +46,6 @@ class GeneticAlgorithm:
 
             population.routes = new_routes
             generation_best = population.get_best_route()
-
             if generation_best.fitness > best_route.fitness:
                 best_route = generation_best
 
