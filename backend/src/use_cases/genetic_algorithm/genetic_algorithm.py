@@ -37,14 +37,15 @@ class GeneticAlgorithm:
         places: list[Place],
         closed: bool = True,
         dist_matrix: list[list[float]] | None = None,
+        fixed_start: bool = False,
     ) -> Route:
         """
         Ejecuta el GA y retorna la mejor ruta encontrada.
 
         Si dist_matrix es None, usa haversine para calcular distancias.
-        Si dist_matrix es una matriz NxN, usa distancias reales de carretera.
+        Si fixed_start=True, places[0] siempre es el punto de partida.
         """
-        population = Population(places, self.population_size, closed, dist_matrix)
+        population = Population(places, self.population_size, closed, dist_matrix, fixed_start)
         best_route = population.get_best_route()
 
         for _ in range(self.generations):

@@ -11,7 +11,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
  * @param {boolean} closed - true = ruta circular (regresa al origen), false = ruta abierta
  * @returns {{ orderedRoute: import('../types').Place[], totalDistanceKm: number }}
  */
-export async function calcularRuta(places, closed) {
+export async function calcularRuta(places, closed, startIndex = null) {
   // El token expira cada hora; getIdToken() lo renueva automáticamente si expiró.
   const token = await obtenerIdToken();
   if (!token) throw new Error('No hay sesión activa');
@@ -31,7 +31,11 @@ export async function calcularRuta(places, closed) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ places: backendPlaces, closed }),
+    body: JSON.stringify({
+      places: backendPlaces,
+      closed,
+      ...(startIndex !== null && { start_index: startIndex }),
+    }),
   });
 
   if (!res.ok) {

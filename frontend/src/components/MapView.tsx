@@ -121,12 +121,13 @@ const GUATEMALA_CITY: [number, number] = [14.6349, -90.5069];
 export default function MapView({ locations, optimizedRoute, closed = true }: MapProps) {
   const isOptimized = optimizedRoute.length > 0;
   const displayPoints = isOptimized ? optimizedRoute : locations;
+  const geometry = useOsrmRoute(isOptimized ? optimizedRoute : []);
 
-  // Para ruta cerrada, añadimos el primer punto al final para que OSRM calcule el regreso
-  const osrmWaypoints = isOptimized
-    ? (closed && optimizedRoute.length > 1 ? [...optimizedRoute, optimizedRoute[0]] : optimizedRoute)
+  // Segmento de cierre: último → primero, solo para ruta cerrada
+  const closingPoints = isOptimized && closed && optimizedRoute.length > 1
+    ? [optimizedRoute[optimizedRoute.length - 1], optimizedRoute[0]]
     : [];
-  const geometry = useOsrmRoute(osrmWaypoints);
+  const closingGeometry = useOsrmRoute(closingPoints);
 
   return (
     <MapContainer
@@ -157,6 +158,11 @@ export default function MapView({ locations, optimizedRoute, closed = true }: Ma
       {/* Polilínea de la ruta optimizada por carretera */}
       {geometry.length > 0 && (
         <Polyline positions={geometry} color="#10b981" weight={5} opacity={0.85} />
+      )}
+
+      {/* Segmento de cierre por carretera: último → primero (solo ruta cerrada) */}
+      {closingGeometry.length > 0 && (
+        <Polyline positions={closingGeometry} color="#10b981" weight={5} opacity={0.85} />
       )}
 
       {/* Polilínea punteada entre destinos sin optimizar */}

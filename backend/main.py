@@ -132,13 +132,19 @@ async def optimize(request: Request):
 
     places_data = data.get("places", [])
     closed = bool(data.get("closed", True))
+    # start_index: índice del destino que actúa como punto de partida fijo (opcional)
+    start_index = data.get("start_index", None)
+    if start_index is not None:
+        try:
+            start_index = int(start_index)
+        except (ValueError, TypeError):
+            start_index = None
 
     # Validar cantidad de destinos
     if not (2 <= len(places_data) <= 15):
         return JSONResponse({"error": "Se requieren entre 2 y 15 destinos"}, status_code=400)
 
-    # Construir objetos de dominio.
-    # place_id es el índice string ("0", "1", ...) para mapear de vuelta en el frontend.
+    # Construir objetos de dominio con place_id = índice original
     try:
         places = [
             Place(
@@ -155,25 +161,40 @@ async def optimize(request: Request):
     if not _validar_radio(places):
         return JSONResponse({"error": "Algún par de destinos supera los 100 km"}, status_code=400)
 
-    # 4. Construir matriz de distancias reales y correr el GA
-    # La matriz se precomputa una sola vez; el GA la usa en cada evaluación de fitness.
+    # Si hay punto de partida fijo, reordenar para que quede primero.
+    # Guardamos un mapa de nuevo_id → place_id_original para reconstruir la respuesta.
+    fixed_start = False
+    if start_index is not None and 0 <= start_index < len(places):
+        start_place = places[start_index]
+        rest = [p for i, p in enumerate(places) if i != start_index]
+        reordered = [start_place] + rest
+        # Reasignar place_ids secuenciales para indexar la matriz correctamente
+        id_map = {str(new_i): p.place_id for new_i, p in enumerate(reordered)}
+        places = [
+            Place(place_id=str(i), name=p.name, coordinates=p.coordinates)
+            for i, p in enumerate(reordered)
+        ]
+        fixed_start = True
+    else:
+        id_map = {str(i): str(i) for i in range(len(places))}
+
+    # Construir matriz de distancias reales y correr el GA
     dist_matrix = None
     try:
         from distance_matrix import construir_matriz
         dist_matrix = construir_matriz(places)
     except Exception as e:
-        # Si la API no está configurada o falla, el GA usa haversine como fallback
         print(f"[WARN] Distance Matrix API no disponible, usando haversine: {e}")
 
     ga = GeneticAlgorithm()
-    best_route = ga.run(places, closed=closed, dist_matrix=dist_matrix)
+    best_route = ga.run(places, closed=closed, dist_matrix=dist_matrix, fixed_start=fixed_start)
 
-    # fitness = 1 / distancia_total → distancia = 1 / fitness
     total_distance_km = round(1 / best_route.fitness, 2)
 
     return JSONResponse({
         "route": [
-            {"place_id": p.place_id, "name": p.name, "order": i + 1}
+            # Mapear de vuelta al place_id original para que el frontend reconstruya correctamente
+            {"place_id": id_map[p.place_id], "name": p.name, "order": i + 1}
             for i, p in enumerate(best_route.route)
         ],
         "total_distance_km": total_distance_km,

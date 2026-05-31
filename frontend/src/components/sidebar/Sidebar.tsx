@@ -52,7 +52,10 @@ interface SidebarProps {
   optimizedRoute: Place[];
   onCalculateRoute: () => Promise<void>;
   onClearRoute: () => void;
+  onClearAll: () => void;
   loading: boolean;
+  startIndex: number | null;
+  setStartIndex: (i: number | null) => void;
 }
 
 
@@ -62,7 +65,10 @@ export default function Sidebar({
   optimizedRoute,
   onCalculateRoute,
   onClearRoute,
+  onClearAll,
   loading,
+  startIndex,
+  setStartIndex,
 }: SidebarProps) {
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -109,12 +115,14 @@ export default function Sidebar({
 
   const handleRemove = (idx: number) => {
     setLocations((prev) => prev.filter((_, i) => i !== idx));
+    if (startIndex === idx) setStartIndex(null);
+    else if (startIndex !== null && idx < startIndex) setStartIndex(startIndex - 1);
     if (isOptimized) onClearRoute();
   };
 
   const handleClear = () => {
     setLocations([]);
-    onClearRoute();
+    onClearAll();
     setError(null);
   };
 
@@ -174,13 +182,15 @@ export default function Sidebar({
       <ul className={styles.list}>
         {/* Si hay ruta optimizada, mostrar en ese orden; si no, en el orden de entrada */}
         {(isOptimized ? optimizedRoute : locations).map((loc, idx) => {
-          const originalIdx = locations.findIndex(
-            (p) => p.lat === loc.lat && p.lng === loc.lng
-          );
+          const originalIdx = isOptimized
+            ? locations.findIndex((p) => p.lat === loc.lat && p.lng === loc.lng)
+            : idx;
+          const isStart = originalIdx === startIndex;
+
           return (
             <li key={`${loc.lat}-${loc.lng}-${idx}`} className={styles.item}>
-              <span className={`${styles.badge} ${isOptimized ? styles.badgeGreen : styles.badgeBlue}`}>
-                {idx + 1}
+              <span className={`${styles.badge} ${isOptimized ? styles.badgeGreen : isStart ? styles.badgeStart : styles.badgeBlue}`}>
+                {isStart && !isOptimized ? '★' : idx + 1}
               </span>
               <span className={styles.itemText} title={loc.address}>
                 {loc.name || loc.address.split(',')[0]}
@@ -188,6 +198,16 @@ export default function Sidebar({
                   {loc.address.split(',').slice(1, 3).join(',')}
                 </small>
               </span>
+              {!isOptimized && (
+                <button
+                  className={`${styles.startBtn} ${isStart ? styles.startBtnActive : ''}`}
+                  onClick={() => { setStartIndex(isStart ? null : originalIdx); onClearRoute(); }}
+                  title={isStart ? 'Quitar como origen' : 'Fijar como punto de partida'}
+                  disabled={loading}
+                >
+                  {isStart ? '★' : '☆'}
+                </button>
+              )}
               <button
                 className={styles.removeBtn}
                 onClick={() => handleRemove(originalIdx >= 0 ? originalIdx : idx)}

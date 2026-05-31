@@ -17,6 +17,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   // true = ruta circular (regresa al origen), false = ruta abierta
   const [closed, setClosed] = useState(true);
+  // Índice del destino marcado como punto de partida fijo (null = sin punto fijo)
+  const [startIndex, setStartIndex] = useState<number | null>(null);
 
   // Escucha cambios de sesión de Firebase. Se ejecuta al montar y limpia al desmontar.
   useEffect(() => {
@@ -34,7 +36,7 @@ export default function App() {
 
     try {
       const { calcularRuta } = await import('./services/cloudFunction');
-      const result = await calcularRuta(locations, closed);
+      const result = await calcularRuta(locations, closed, startIndex);
       setOptimizedRoute(result.orderedRoute);
       setTotalDistanceKm(result.totalDistanceKm);
     } catch (err) {
@@ -48,6 +50,12 @@ export default function App() {
   const handleClearRoute = () => {
     setOptimizedRoute([]);
     setTotalDistanceKm(null);
+  };
+
+  const handleClearAll = () => {
+    setOptimizedRoute([]);
+    setTotalDistanceKm(null);
+    setStartIndex(null);
   };
 
   // Mientras Firebase resuelve el estado de autenticación, mostrar spinner
@@ -85,7 +93,10 @@ export default function App() {
         optimizedRoute={optimizedRoute}
         onCalculateRoute={handleCalculateRoute}
         onClearRoute={handleClearRoute}
+        onClearAll={handleClearAll}
         loading={loading}
+        startIndex={startIndex}
+        setStartIndex={setStartIndex}
       />
       <div style={{ flex: 1, position: 'relative' }}>
         <div style={topBarStyle}>
