@@ -1,49 +1,20 @@
-import { useState, type ChangeEvent, type KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react';
 import type { Place } from '../../types';
+import { searchPlaces, type PlaceOption } from '../../services/api';
 import styles from './Sidebar.module.css';
 
 const MAX_LOCATIONS = 15;
 const MAX_RADIUS_KM = 100;
+const DEBOUNCE_MS = 400;
 
-/** Distancia en km entre dos puntos usando haversine (línea recta). */
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
+  const a =
+    Math.sin(dLat / 2) ** 2 +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.asin(Math.sqrt(a));
-}
-
-interface NominatimResult {
-  display_name: string;
-  lat: string;
-  lon: string;
-}
-
-async function geocodeQuery(query: string): Promise<Place | null> {
-  const params = new URLSearchParams({
-    q: query,
-    format: 'json',
-    limit: '1',
-    countrycodes: 'gt',
-  });
-
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?${params}`,
-    { headers: { 'Accept-Language': 'es' } }
-  );
-
-  const results: NominatimResult[] = await res.json();
-  if (results.length === 0) return null;
-
-  const r = results[0];
-  return {
-    name: query,
-    address: r.display_name,
-    lat: parseFloat(r.lat),
-    lng: parseFloat(r.lon),
-  };
 }
 
 interface SidebarProps {
@@ -55,7 +26,6 @@ interface SidebarProps {
   loading: boolean;
 }
 
-
 export default function Sidebar({
   locations,
   setLocations,
@@ -65,50 +35,84 @@ export default function Sidebar({
   loading,
 }: SidebarProps) {
   const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<PlaceOption[]>([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isOptimized = optimizedRoute.length > 0;
   const canAdd = locations.length < MAX_LOCATIONS;
   const canOptimize = locations.length >= 2 && !loading;
 
-  const handleAdd = async () => {
-    if (!query.trim() || !canAdd) return;
-    setSearching(true);
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setSuggestions([]);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleQueryChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
     setError(null);
 
-    try {
-      const place = await geocodeQuery(query.trim());
-      if (!place) {
-        setError('No se encontró el lugar. Intenta ser más específico.');
-        return;
-      }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
 
-      // Validar que el nuevo destino esté dentro del radio máximo respecto a los existentes
-      const tooFar = locations.find(
-        (existing) => haversineKm(existing.lat, existing.lng, place.lat, place.lng) > MAX_RADIUS_KM
-      );
-      if (tooFar) {
-        setError(`"${place.name}" está a más de ${MAX_RADIUS_KM} km de "${tooFar.name}". Todos los destinos deben estar dentro de ${MAX_RADIUS_KM} km entre sí.`);
-        return;
-      }
-
-      setLocations((prev) => [...prev, place]);
-      onClearRoute();
-      setQuery('');
-    } catch {
-      setError('Error al buscar el lugar. Verifica tu conexión.');
-    } finally {
-      setSearching(false);
+    if (!value.trim() || !canAdd) {
+      setSuggestions([]);
+      return;
     }
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const results = await searchPlaces(value.trim());
+        setSuggestions(results);
+      } catch {
+        setSuggestions([]);
+      } finally {
+        setSearching(false);
+      }
+    }, DEBOUNCE_MS);
+  };
+
+  const addPlace = (option: PlaceOption) => {
+    const place: Place = {
+      name: option.name,
+      address: option.address ?? option.name,
+      lat: option.latitude,
+      lng: option.longitude,
+    };
+
+    const tooFar = locations.find(
+      existing => haversineKm(existing.lat, existing.lng, place.lat, place.lng) > MAX_RADIUS_KM
+    );
+    if (tooFar) {
+      setError(`"${place.name}" is more than ${MAX_RADIUS_KM} km from "${tooFar.name}".`);
+      setSuggestions([]);
+      return;
+    }
+
+    setLocations(prev => [...prev, place]);
+    onClearRoute();
+    setQuery('');
+    setSuggestions([]);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleAdd();
+    if (e.key === 'Escape') {
+      setSuggestions([]);
+    } else if (e.key === 'Enter' && suggestions.length > 0) {
+      addPlace(suggestions[0]);
+    }
   };
 
   const handleRemove = (idx: number) => {
-    setLocations((prev) => prev.filter((_, i) => i !== idx));
+    setLocations(prev => prev.filter((_, i) => i !== idx));
     if (isOptimized) onClearRoute();
   };
 
@@ -116,6 +120,8 @@ export default function Sidebar({
     setLocations([]);
     onClearRoute();
     setError(null);
+    setSuggestions([]);
+    setQuery('');
   };
 
   return (
@@ -125,34 +131,41 @@ export default function Sidebar({
           <span className={styles.logoIcon}>⟳</span>
           <div>
             <h1 className={styles.title}>RouteOpt</h1>
-            <p className={styles.subtitle}>Optimización genética de rutas</p>
+            <p className={styles.subtitle}>Genetic route optimization</p>
           </div>
         </div>
       </div>
 
       <div className={styles.searchSection}>
-        <label className={styles.label}>Agregar destino</label>
-        <div className={styles.inputRow}>
-          <input
-            className={styles.input}
-            type="text"
-            placeholder="Busca una dirección..."
-            value={query}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setQuery(e.target.value);
-              setError(null);
-            }}
-            onKeyDown={handleKeyDown}
-            disabled={!canAdd || searching || loading}
-          />
-          <button
-            className={styles.addBtn}
-            onClick={handleAdd}
-            disabled={!query.trim() || !canAdd || searching || loading}
-            title="Agregar"
-          >
-            {searching ? '…' : '+'}
-          </button>
+        <label className={styles.label}>Add destination</label>
+        <div className={styles.inputRow} ref={dropdownRef}>
+          <div className={styles.inputWrapper}>
+            <input
+              className={styles.input}
+              type="text"
+              placeholder="Search for a place..."
+              value={query}
+              onChange={handleQueryChange}
+              onKeyDown={handleKeyDown}
+              disabled={!canAdd || loading}
+              autoComplete="off"
+            />
+            {searching && <span className={styles.inputSpinner} />}
+            {suggestions.length > 0 && (
+              <ul className={styles.dropdown}>
+                {suggestions.map(opt => (
+                  <li
+                    key={opt.place_id}
+                    className={styles.dropdownItem}
+                    onMouseDown={() => addPlace(opt)}
+                  >
+                    <span className={styles.dropdownName}>{opt.name}</span>
+                    <span className={styles.dropdownAddr}>{opt.address}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         {error && <p className={styles.error}>{error}</p>}
@@ -163,19 +176,16 @@ export default function Sidebar({
               locations.length >= MAX_LOCATIONS ? styles.dotFull : styles.dotOk
             }`}
           />
-          {locations.length} / {MAX_LOCATIONS} destinos
+          {locations.length} / {MAX_LOCATIONS} destinations
         </div>
       </div>
 
-      {isOptimized && (
-        <p className={styles.optimizedLabel}>Ruta optimizada</p>
-      )}
+      {isOptimized && <p className={styles.optimizedLabel}>Optimized route</p>}
 
       <ul className={styles.list}>
-        {/* Si hay ruta optimizada, mostrar en ese orden; si no, en el orden de entrada */}
         {(isOptimized ? optimizedRoute : locations).map((loc, idx) => {
           const originalIdx = isOptimized
-            ? locations.findIndex((p) => p.lat === loc.lat && p.lng === loc.lng)
+            ? locations.findIndex(p => p.lat === loc.lat && p.lng === loc.lng)
             : idx;
           return (
             <li key={`${loc.lat}-${loc.lng}-${idx}`} className={styles.item}>
@@ -191,7 +201,7 @@ export default function Sidebar({
               <button
                 className={styles.removeBtn}
                 onClick={() => handleRemove(originalIdx >= 0 ? originalIdx : idx)}
-                title="Eliminar"
+                title="Remove"
                 disabled={loading || isOptimized}
               >
                 ×
@@ -208,11 +218,11 @@ export default function Sidebar({
           disabled={!canOptimize}
         >
           {loading ? (
-            <span className={styles.spinner}>Calculando...</span>
+            <span className={styles.spinner}>Calculating...</span>
           ) : isOptimized ? (
-            'Re-optimizar ruta'
+            'Re-optimize route'
           ) : (
-            'Optimizar ruta'
+            'Optimize route'
           )}
         </button>
 
@@ -222,7 +232,7 @@ export default function Sidebar({
             onClick={handleClear}
             disabled={loading}
           >
-            Limpiar todo
+            Clear all
           </button>
         )}
       </div>

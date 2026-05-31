@@ -1,0 +1,50 @@
+.bar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #0f1117;
+  border: 1px solid #1e2433;
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+.user {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.distance {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.signOutBtn {
+  padding: 4px 10px;
+  background: transparent;
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.signOutBtn:hover {
+  background: rgba(248, 113, 113, 0.08);
+}

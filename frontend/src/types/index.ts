@@ -1,4 +1,3 @@
-/** Representa un destino ingresado por el usuario. */
 export interface Place {
   name: string;
   address: string;
@@ -6,16 +5,22 @@ export interface Place {
   lng: number;
 }
 
-/** Elemento de la ruta devuelto por el backend. */
-export interface PlaceResult {
+export interface PlaceOption {
+  place_id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+}
+
+export interface RouteResult {
   place_id: string;
   name: string;
   order: number;
 }
 
-/** Respuesta completa del endpoint /routes/optimize. */
 export interface RouteResponse {
-  route: PlaceResult[];
+  route: RouteResult[];
   total_distance_km: number;
   closed: boolean;
 }
