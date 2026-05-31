@@ -1,7 +1,7 @@
-// Pantalla de login que se muestra cuando no hay sesión activa.
-// Soporta autenticación con Google (popup) y email/password.
+// Pantalla de login/registro que se muestra cuando no hay sesión activa.
+// Soporta autenticación con Google (popup) y email/password (login y registro).
 import { useState } from 'react';
-import { loginConGoogle, loginConEmail } from '../services/firebase';
+import { loginConGoogle, loginConEmail, registrarConEmail } from '../services/firebase';
 
 /** Traduce códigos de error de Firebase a mensajes legibles en español. */
 function traducirError(code) {
@@ -10,6 +10,8 @@ function traducirError(code) {
     'auth/user-not-found': 'No existe una cuenta con ese email.',
     'auth/invalid-email': 'El formato del email no es válido.',
     'auth/invalid-credential': 'Credenciales inválidas. Verifica email y contraseña.',
+    'auth/email-already-in-use': 'Ya existe una cuenta con ese email.',
+    'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
     'auth/popup-closed-by-user': 'Se cerró el popup antes de completar el login.',
     'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde.',
   };
@@ -21,6 +23,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // Alterna entre modo login y modo registro
+  const [modo, setModo] = useState('login');
 
   const handleGoogle = async () => {
     setError('');
@@ -35,7 +39,7 @@ export default function Login() {
     }
   };
 
-  const handleEmail = async () => {
+  const handleEmailSubmit = async () => {
     setError('');
     if (!email || !password) {
       setError('Ingresa email y contraseña.');
@@ -43,7 +47,11 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      await loginConEmail(email, password);
+      if (modo === 'login') {
+        await loginConEmail(email, password);
+      } else {
+        await registrarConEmail(email, password);
+      }
     } catch (e) {
       setError(traducirError(e.code));
     } finally {
@@ -55,16 +63,16 @@ export default function Login() {
     <div style={styles.overlay}>
       <div style={styles.card}>
         <h2 style={styles.title}>Route Optimizer</h2>
-        <p style={styles.subtitle}>Inicia sesión para continuar</p>
+        <p style={styles.subtitle}>
+          {modo === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta'}
+        </p>
 
-        {/* Botón de Google */}
         <button style={styles.googleBtn} onClick={handleGoogle} disabled={loading}>
           Continuar con Google
         </button>
 
         <hr style={styles.divider} />
 
-        {/* Formulario email/password */}
         <input
           style={styles.input}
           type="email"
@@ -76,16 +84,26 @@ export default function Login() {
         <input
           style={styles.input}
           type="password"
-          placeholder="Contraseña"
+          placeholder={modo === 'login' ? 'Contraseña' : 'Contraseña (mín. 6 caracteres)'}
           value={password}
           onChange={e => setPassword(e.target.value)}
           disabled={loading}
         />
-        <button style={styles.emailBtn} onClick={handleEmail} disabled={loading}>
-          {loading ? 'Cargando...' : 'Iniciar sesión'}
+        <button style={styles.emailBtn} onClick={handleEmailSubmit} disabled={loading}>
+          {loading ? 'Cargando...' : modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
         </button>
 
-        {/* Mensaje de error */}
+        {/* Toggle login/registro */}
+        <p style={styles.toggle}>
+          {modo === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
+          <span
+            style={styles.toggleLink}
+            onClick={() => { setModo(modo === 'login' ? 'registro' : 'login'); setError(''); }}
+          >
+            {modo === 'login' ? 'Regístrate' : 'Inicia sesión'}
+          </span>
+        </p>
+
         {error && <p style={styles.error}>{error}</p>}
       </div>
     </div>
@@ -116,5 +134,7 @@ const styles = {
     padding: '0.75rem', background: '#333', color: '#fff',
     border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600,
   },
+  toggle: { margin: 0, textAlign: 'center', fontSize: '0.85rem', color: '#555' },
+  toggleLink: { color: '#4285F4', cursor: 'pointer', fontWeight: 600 },
   error: { color: '#e53e3e', fontSize: '0.85rem', margin: 0 },
 };

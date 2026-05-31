@@ -1,11 +1,12 @@
 // Inicialización de Firebase y helpers de autenticación.
 // Este módulo es el único punto de contacto con el SDK de Firebase en el frontend.
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
 
@@ -19,7 +20,8 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+// Evitar reinicialización al hacer hot reload en desarrollo
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
 /** Instancia de autenticación compartida en toda la app. */
 export const auth = getAuth(app);
@@ -38,6 +40,13 @@ export const loginConGoogle = () => signInWithPopup(auth, googleProvider);
  */
 export const loginConEmail = (email, password) =>
   signInWithEmailAndPassword(auth, email, password);
+
+/**
+ * Crea una nueva cuenta con email y contraseña.
+ * Lanza FirebaseError con codes como 'auth/email-already-in-use', 'auth/weak-password'.
+ */
+export const registrarConEmail = (email, password) =>
+  createUserWithEmailAndPassword(auth, email, password);
 
 /** Cierra la sesión del usuario actual. */
 export const logout = () => signOut(auth);
