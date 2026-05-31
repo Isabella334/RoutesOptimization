@@ -13,13 +13,10 @@ class Route:
         route: list[Place],
         closed: bool = True,
         dist_matrix: list[list[float]] | None = None,
-        fixed_start: bool = False,
     ):
         self.route = route
         self.closed = closed
         self._dist_matrix = dist_matrix
-        # Si True, route[0] es el punto de partida fijo y no puede ser movido
-        self._fixed_start = fixed_start
         self.fitness = self._calculate_fitness()
 
     def _get_distance(self, place_a: Place, place_b: Place) -> float:
@@ -47,5 +44,5 @@ class Route:
         return 1 / total if total > 0 else 0.0
 
     def copy(self) -> "Route":
-        """Copia superficial que preserva matriz y modo de inicio fijo."""
-        return Route(self.route[:], self.closed, self._dist_matrix, self._fixed_start)
+        """Copia superficial que preserva la misma referencia a la matriz."""
+        return Route(self.route[:], self.closed, self._dist_matrix)

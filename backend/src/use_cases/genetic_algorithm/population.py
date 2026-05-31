@@ -11,9 +11,8 @@ class Population:
         population_size: int,
         closed: bool = True,
         dist_matrix: list[list[float]] | None = None,
-        fixed_start: bool = False,
     ):
-        self.routes = self._generate_population(places, population_size, closed, dist_matrix, fixed_start)
+        self.routes = self._generate_population(places, population_size, closed, dist_matrix)
 
     def _generate_population(
         self,
@@ -21,23 +20,12 @@ class Population:
         population_size: int,
         closed: bool,
         dist_matrix: list[list[float]] | None,
-        fixed_start: bool,
     ) -> list[Route]:
-        """
-        Genera population_size rutas aleatorias.
-
-        Si fixed_start=True, places[0] siempre ocupa la primera posición y solo
-        se permutan los demás — garantiza que el punto de partida nunca cambie.
-        """
-        population = []
-        for _ in range(population_size):
-            if fixed_start and len(places) > 1:
-                # Mantener el primer lugar fijo, permutar el resto
-                shuffled = [places[0]] + random.sample(places[1:], len(places) - 1)
-            else:
-                shuffled = random.sample(places, len(places))
-            population.append(Route(shuffled, closed, dist_matrix, fixed_start))
-        return population
+        """Genera population_size rutas aleatorias como punto de partida del GA."""
+        return [
+            Route(random.sample(places, len(places)), closed, dist_matrix)
+            for _ in range(population_size)
+        ]
 
     def get_best_route(self) -> Route:
         """Retorna la ruta con mayor fitness (menor distancia) de la generación actual."""

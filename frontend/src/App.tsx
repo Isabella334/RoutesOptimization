@@ -9,7 +9,6 @@ import Login from './components/Login';
 import type { Place } from './types';
 
 export default function App() {
-  // Estado del usuario autenticado (null = no autenticado, undefined = cargando)
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [locations, setLocations] = useState<Place[]>([]);
   const [optimizedRoute, setOptimizedRoute] = useState<Place[]>([]);
@@ -17,10 +16,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   // true = ruta circular (regresa al origen), false = ruta abierta
   const [closed, setClosed] = useState(true);
-  // Índice del destino marcado como punto de partida fijo (null = sin punto fijo)
-  const [startIndex, setStartIndex] = useState<number | null>(null);
 
-  // Escucha cambios de sesión de Firebase. Se ejecuta al montar y limpia al desmontar.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
@@ -36,8 +32,7 @@ export default function App() {
 
     try {
       const { calcularRuta } = await import('./services/cloudFunction');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (calcularRuta as any)(locations, closed, startIndex);
+      const result = await calcularRuta(locations, closed);
       setOptimizedRoute(result.orderedRoute);
       setTotalDistanceKm(result.totalDistanceKm);
     } catch (err) {
@@ -53,13 +48,6 @@ export default function App() {
     setTotalDistanceKm(null);
   };
 
-  const handleClearAll = () => {
-    setOptimizedRoute([]);
-    setTotalDistanceKm(null);
-    setStartIndex(null);
-  };
-
-  // Mientras Firebase resuelve el estado de autenticación, mostrar spinner
   if (user === undefined) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -68,11 +56,10 @@ export default function App() {
     );
   }
 
-  // Sin sesión activa → mapa de fondo blureado + login encima
   if (user === null) {
     return (
       <div style={{ position: 'relative', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-        <MapView locations={[]} optimizedRoute={[]} />
+        <MapView locations={[]} optimizedRoute={[]} closed={false} />
         <div style={{
           position: 'absolute', inset: 0, zIndex: 1000,
           backdropFilter: 'blur(6px)',
@@ -85,7 +72,6 @@ export default function App() {
     );
   }
 
-  // Con sesión → app completa
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
       <Sidebar
@@ -94,10 +80,7 @@ export default function App() {
         optimizedRoute={optimizedRoute}
         onCalculateRoute={handleCalculateRoute}
         onClearRoute={handleClearRoute}
-        onClearAll={handleClearAll}
         loading={loading}
-        startIndex={startIndex}
-        setStartIndex={setStartIndex}
       />
       <div style={{ flex: 1, position: 'relative' }}>
         <div style={topBarStyle}>
