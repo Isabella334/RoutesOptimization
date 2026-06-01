@@ -1,3 +1,4 @@
+from typing import Literal
 from pydantic import BaseModel
 
 class PlaceDTO(BaseModel):
@@ -9,3 +10,4 @@ class PlaceDTO(BaseModel):
 class OptimizeRouteRequest(BaseModel):
     places: list[PlaceDTO]
     closed: bool = True
+    travel_mode: Literal["driving", "walking", "bicycling", "transit"] = "driving"

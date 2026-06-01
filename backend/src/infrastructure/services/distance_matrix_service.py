@@ -8,7 +8,7 @@ class DistanceMatrixService:
     def __init__(self):
         self._api_key = os.environ.get("GOOGLE_MAPS_API_KEY", "").strip()
 
-    def build(self, places: list[Place]) -> list[list[float]]:
+    def build(self, places: list[Place], mode: str = "driving") -> list[list[float]]:
         if not self._api_key:
             raise RuntimeError("GOOGLE_MAPS_API_KEY not configured")
 
@@ -17,7 +17,7 @@ class DistanceMatrixService:
         )
         response = requests.get(
             self._URL,
-            params={"origins": coords, "destinations": coords, "mode": "driving", "units": "metric", "key": self._api_key},
+            params={"origins": coords, "destinations": coords, "mode": mode, "units": "metric", "key": self._api_key},
             timeout=10,
         )
         response.raise_for_status()

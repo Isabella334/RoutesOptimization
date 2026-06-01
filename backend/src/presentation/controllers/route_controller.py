@@ -12,9 +12,9 @@ _MAX_RADIUS_KM = 100
 _MIN_PLACES = 2
 _MAX_PLACES = 15
 
-def _build_dist_fn(places: list[Place]):
+def _build_dist_fn(places: list[Place], mode: str):
     try:
-        matrix = DistanceMatrixService().build(places)
+        matrix = DistanceMatrixService().build(places, mode=mode)
         idx = {p.place_id: i for i, p in enumerate(places)}
         return lambda a, b: matrix[idx[a.place_id]][idx[b.place_id]]
     except Exception:
@@ -35,7 +35,7 @@ def optimize_route(request: OptimizeRouteRequest) -> OptimizeRouteResponse:
             if places[i].distance_to(places[j]) > _MAX_RADIUS_KM:
                 raise HTTPException(status_code=400, detail=f"A pair of destinations exceeds {_MAX_RADIUS_KM} km")
 
-    dist_fn = _build_dist_fn(places)
+    dist_fn = _build_dist_fn(places, request.travel_mode)
     best_route = GeneticAlgorithm().run(places, closed=request.closed, dist_fn=dist_fn)
     total_distance = 1 / best_route.fitness
 

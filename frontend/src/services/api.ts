@@ -2,6 +2,7 @@ import { getToken } from './firebase';
 import type { Place, PlaceOption, RouteResult } from '../types';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const CLOUD_FUNCTION_URL = import.meta.env.VITE_CLOUD_FUNCTION_URL;
 
 async function requireToken(): Promise<string> {
   const token = await getToken();
@@ -39,7 +40,7 @@ export async function optimizeRoute(
     longitude: p.lng,
   }));
 
-  const res = await fetch(`${BASE_URL}/routes/optimize`, {
+  const res = await fetch(`${CLOUD_FUNCTION_URL}/routes/optimize`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
