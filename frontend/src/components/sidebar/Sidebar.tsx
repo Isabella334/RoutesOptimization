@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react';
+import React, { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react';
+import { Car, PersonStanding, Bike, Bus } from 'lucide-react';
 import type { Place, PlaceOption } from '../../types';
 import { searchPlaces, type TravelMode } from '../../services/api';
 import styles from './Sidebar.module.css';
@@ -17,14 +18,16 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.asin(Math.sqrt(a));
 }
 
-const TRAVEL_MODE_OPTIONS: { value: TravelMode; label: string; icon: string }[] = [
-  { value: 'driving',   label: 'Car',            icon: '🚗' },
-  { value: 'walking',   label: 'Walking',         icon: '🚶' },
-  { value: 'bicycling', label: 'Bicycle',         icon: '🚲' },
-  { value: 'transit',   label: 'Public transit',  icon: '🚌' },
+const TRAVEL_MODE_OPTIONS: { value: TravelMode; label: string; icon: React.ReactNode }[] = [
+  { value: 'driving',   label: 'Car',     icon: <Car size={18} /> },
+  { value: 'walking',   label: 'Walking', icon: <PersonStanding size={18} /> },
+  { value: 'bicycling', label: 'Bicycle', icon: <Bike size={18} /> },
+  { value: 'transit',   label: 'Transit', icon: <Bus size={18} /> },
 ];
 
 interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
   locations: Place[];
   setLocations: React.Dispatch<React.SetStateAction<Place[]>>;
   optimizedRoute: Place[];
@@ -38,6 +41,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({
+  isOpen,
+  onClose,
   locations,
   setLocations,
   optimizedRoute,
@@ -132,7 +137,7 @@ export default function Sidebar({
   const displayList = isOptimized ? optimizedRoute : locations;
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
       <div className={styles.header}>
         <div className={styles.logo}>
           <span className={styles.logoIcon}>⟳</span>
@@ -141,6 +146,7 @@ export default function Sidebar({
             <p className={styles.subtitle}>Genetic route optimization</p>
           </div>
         </div>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Close menu">✕</button>
       </div>
 
       <div className={styles.searchSection}>
@@ -155,7 +161,7 @@ export default function Sidebar({
               disabled={loading}
               title={opt.label}
             >
-              <span className={styles.modeIcon}>{opt.icon}</span>
+              <span className={styles.modeIcon} aria-hidden="true">{opt.icon}</span>
               <span className={styles.modeLabel}>{opt.label}</span>
             </button>
           ))}

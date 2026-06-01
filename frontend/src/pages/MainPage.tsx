@@ -7,6 +7,7 @@ import Sidebar from '../components/sidebar/Sidebar';
 import TopBar from '../components/TopBar/TopBar';
 import type { Place } from '../types';
 import type { TravelMode } from '../services/api';
+import styles from './MainPage.module.css';
 
 interface MainPageProps {
   user: User;
@@ -16,6 +17,7 @@ export default function MainPage({ user }: MainPageProps) {
   const [locations, setLocations] = useState<Place[]>([]);
   const [closed, setClosed] = useState(true);
   const [travelMode, setTravelMode] = useState<TravelMode>('driving');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { optimizedRoute, totalDistanceKm, loading, optimize, clear } = useRoute();
 
   const handleClosedChange = (next: boolean) => {
@@ -29,8 +31,10 @@ export default function MainPage({ user }: MainPageProps) {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div className={styles.layout}>
       <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
         locations={locations}
         setLocations={setLocations}
         optimizedRoute={optimizedRoute}
@@ -42,7 +46,15 @@ export default function MainPage({ user }: MainPageProps) {
         onClearRoute={clear}
         loading={loading}
       />
-      <div style={{ flex: 1, position: 'relative' }}>
+
+      {sidebarOpen && (
+        <div className={styles.backdrop} onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <div className={styles.mapArea}>
+        <button className={styles.menuBtn} onClick={() => setSidebarOpen(true)}>
+          ☰
+        </button>
         <TopBar
           userLabel={user.email ?? user.displayName ?? ''}
           totalDistanceKm={totalDistanceKm}

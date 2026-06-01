@@ -1,0 +1,49 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.mapArea {
+  flex: 1;
+  position: relative;
+}
+
+/* Hamburger — hidden on desktop */
+.menuBtn {
+  display: none;
+}
+
+.backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .menuBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 600;
+    width: 40px;
+    height: 40px;
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+  }
+}
