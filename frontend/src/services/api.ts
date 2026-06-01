@@ -2,7 +2,6 @@ import { getToken } from './firebase';
 import type { Place, PlaceOption, RouteResult } from '../types';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
-const CLOUD_FUNCTION_URL = import.meta.env.VITE_CLOUD_FUNCTION_URL;
 
 async function requireToken(): Promise<string> {
   const token = await getToken();
@@ -22,14 +21,16 @@ export async function searchPlaces(query: string): Promise<PlaceOption[]> {
     throw new Error(`Backend ${res.status}: ${text}`);
   }
 
-  // Backend returns { places: PlaceOption[] }
   const data: { places: PlaceOption[] } = await res.json();
   return data.places;
 }
 
+export type TravelMode = 'driving' | 'walking' | 'bicycling' | 'transit';
+
 export async function optimizeRoute(
   places: Place[],
-  closed: boolean
+  closed: boolean,
+  travelMode: TravelMode = 'driving',
 ): Promise<{ orderedRoute: Place[]; totalDistanceKm: number }> {
   const token = await requireToken();
 
@@ -40,13 +41,13 @@ export async function optimizeRoute(
     longitude: p.lng,
   }));
 
-  const res = await fetch(`${CLOUD_FUNCTION_URL}/routes/optimize`, {
+  const res = await fetch(`${BASE_URL}/routes/optimize`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ places: payload, closed }),
+    body: JSON.stringify({ places: payload, closed, travel_mode: travelMode }),
   });
 
   if (!res.ok) {
@@ -60,8 +61,5 @@ export async function optimizeRoute(
     .sort((a, b) => a.order - b.order)
     .map(item => places[parseInt(item.place_id)]);
 
-  return {
-    orderedRoute,
-    totalDistanceKm: data.total_distance_km,
-  };
+  return { orderedRoute, totalDistanceKm: data.total_distance_km };
 }

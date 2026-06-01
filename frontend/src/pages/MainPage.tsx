@@ -6,6 +6,7 @@ import MapView from '../components/MapView/MapView';
 import Sidebar from '../components/sidebar/Sidebar';
 import TopBar from '../components/TopBar/TopBar';
 import type { Place } from '../types';
+import type { TravelMode } from '../services/api';
 
 interface MainPageProps {
   user: User;
@@ -14,10 +15,16 @@ interface MainPageProps {
 export default function MainPage({ user }: MainPageProps) {
   const [locations, setLocations] = useState<Place[]>([]);
   const [closed, setClosed] = useState(true);
+  const [travelMode, setTravelMode] = useState<TravelMode>('driving');
   const { optimizedRoute, totalDistanceKm, loading, optimize, clear } = useRoute();
 
   const handleClosedChange = (next: boolean) => {
     setClosed(next);
+    clear();
+  };
+
+  const handleTravelModeChange = (next: TravelMode) => {
+    setTravelMode(next);
     clear();
   };
 
@@ -27,15 +34,17 @@ export default function MainPage({ user }: MainPageProps) {
         locations={locations}
         setLocations={setLocations}
         optimizedRoute={optimizedRoute}
-        onCalculateRoute={() => optimize(locations, closed)}
+        closed={closed}
+        onClosedChange={handleClosedChange}
+        travelMode={travelMode}
+        onTravelModeChange={handleTravelModeChange}
+        onCalculateRoute={() => optimize(locations, closed, travelMode)}
         onClearRoute={clear}
         loading={loading}
       />
       <div style={{ flex: 1, position: 'relative' }}>
         <TopBar
           userLabel={user.email ?? user.displayName ?? ''}
-          closed={closed}
-          onClosedChange={handleClosedChange}
           totalDistanceKm={totalDistanceKm}
           onSignOut={signOutUser}
         />

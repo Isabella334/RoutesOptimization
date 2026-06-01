@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react';
 import type { Place, PlaceOption } from '../../types';
-import { searchPlaces } from '../../services/api';
+import { searchPlaces, type TravelMode } from '../../services/api';
 import styles from './Sidebar.module.css';
 
 const MAX_LOCATIONS = 15;
@@ -17,10 +17,21 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.asin(Math.sqrt(a));
 }
 
+const TRAVEL_MODE_OPTIONS: { value: TravelMode; label: string; icon: string }[] = [
+  { value: 'driving',   label: 'Car',            icon: '🚗' },
+  { value: 'walking',   label: 'Walking',         icon: '🚶' },
+  { value: 'bicycling', label: 'Bicycle',         icon: '🚲' },
+  { value: 'transit',   label: 'Public transit',  icon: '🚌' },
+];
+
 interface SidebarProps {
   locations: Place[];
   setLocations: React.Dispatch<React.SetStateAction<Place[]>>;
   optimizedRoute: Place[];
+  closed: boolean;
+  onClosedChange: (closed: boolean) => void;
+  travelMode: TravelMode;
+  onTravelModeChange: (mode: TravelMode) => void;
   onCalculateRoute: () => Promise<void>;
   onClearRoute: () => void;
   loading: boolean;
@@ -30,6 +41,10 @@ export default function Sidebar({
   locations,
   setLocations,
   optimizedRoute,
+  closed,
+  onClosedChange,
+  travelMode,
+  onTravelModeChange,
   onCalculateRoute,
   onClearRoute,
   loading,
@@ -59,13 +74,8 @@ export default function Sidebar({
     const value = e.target.value;
     setQuery(value);
     setError(null);
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (!value.trim() || !canAdd) {
-      setSuggestions([]);
-      return;
-    }
+    if (!value.trim() || !canAdd) { setSuggestions([]); return; }
 
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
@@ -87,7 +97,6 @@ export default function Sidebar({
       lat: option.latitude,
       lng: option.longitude,
     };
-
     const tooFar = locations.find(
       existing => haversineKm(existing.lat, existing.lng, place.lat, place.lng) > MAX_RADIUS_KM
     );
@@ -96,7 +105,6 @@ export default function Sidebar({
       setSuggestions([]);
       return;
     }
-
     setLocations(prev => [...prev, place]);
     onClearRoute();
     setQuery('');
@@ -104,17 +112,12 @@ export default function Sidebar({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      setSuggestions([]);
-    } else if (e.key === 'Enter' && suggestions.length > 0) {
-      addPlace(suggestions[0]);
-    }
+    if (e.key === 'Escape') setSuggestions([]);
+    else if (e.key === 'Enter' && suggestions.length > 0) addPlace(suggestions[0]);
   };
 
   const handleRemove = (locToRemove: Place) => {
-    setLocations(prev =>
-      prev.filter(p => !(p.lat === locToRemove.lat && p.lng === locToRemove.lng))
-    );
+    setLocations(prev => prev.filter(p => !(p.lat === locToRemove.lat && p.lng === locToRemove.lng)));
     onClearRoute();
   };
 
@@ -141,7 +144,38 @@ export default function Sidebar({
       </div>
 
       <div className={styles.searchSection}>
-        <label className={styles.label}>Add destination</label>
+        {/* Travel mode selector */}
+        <label className={styles.label}>Travel mode</label>
+        <div className={styles.modeGrid}>
+          {TRAVEL_MODE_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              className={`${styles.modeBtn} ${travelMode === opt.value ? styles.modeBtnActive : ''}`}
+              onClick={() => onTravelModeChange(opt.value)}
+              disabled={loading}
+              title={opt.label}
+            >
+              <span className={styles.modeIcon}>{opt.icon}</span>
+              <span className={styles.modeLabel}>{opt.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Closed / open route toggle */}
+        <div className={styles.routeTypeRow}>
+          <span className={styles.routeTypeLabel}>Route type</span>
+          <button
+            className={`${styles.routeTypeToggle} ${closed ? styles.routeTypeClosed : styles.routeTypeOpen}`}
+            onClick={() => onClosedChange(!closed)}
+            disabled={loading}
+          >
+            <span className={styles.routeTypeIndicator} />
+            <span>{closed ? '⟳ Closed route' : '→ Open route'}</span>
+          </button>
+        </div>
+
+        {/* Destination search */}
+        <label className={styles.label} style={{ marginTop: '14px' }}>Add destination</label>
         <div className={styles.inputRow} ref={dropdownRef}>
           <div className={styles.inputWrapper}>
             <input
@@ -175,11 +209,7 @@ export default function Sidebar({
         {error && <p className={styles.error}>{error}</p>}
 
         <div className={styles.counter}>
-          <span
-            className={`${styles.dot} ${
-              locations.length >= MAX_LOCATIONS ? styles.dotFull : styles.dotOk
-            }`}
-          />
+          <span className={`${styles.dot} ${locations.length >= MAX_LOCATIONS ? styles.dotFull : styles.dotOk}`} />
           {locations.length} / {MAX_LOCATIONS} destinations
         </div>
       </div>
@@ -211,11 +241,7 @@ export default function Sidebar({
       </ul>
 
       <div className={styles.actions}>
-        <button
-          className={styles.primaryBtn}
-          onClick={onCalculateRoute}
-          disabled={!canOptimize}
-        >
+        <button className={styles.primaryBtn} onClick={onCalculateRoute} disabled={!canOptimize}>
           {loading ? (
             <span className={styles.spinner}>Calculating...</span>
           ) : isOptimized ? (
@@ -226,11 +252,7 @@ export default function Sidebar({
         </button>
 
         {locations.length > 0 && (
-          <button
-            className={styles.secondaryBtn}
-            onClick={handleClear}
-            disabled={loading}
-          >
+          <button className={styles.secondaryBtn} onClick={handleClear} disabled={loading}>
             Clear all
           </button>
         )}

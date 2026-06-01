@@ -375,3 +375,117 @@
   letter-spacing: 0.05em;
 }
 
+
+
+.modeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.modeBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: #1a2035;
+  border: 1px solid #2a3450;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.modeBtn:hover:not(:disabled) {
+  background: #1e2a45;
+  border-color: #3b4f70;
+}
+
+.modeBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.modeBtnActive {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: #10b981 !important;
+}
+
+.modeIcon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.modeLabel {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.modeBtnActive .modeLabel {
+  color: #34d399;
+}
+
+
+.routeTypeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.routeTypeLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.routeTypeToggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  background: transparent;
+}
+
+.routeTypeToggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.routeTypeClosed {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.routeTypeClosed:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.routeTypeOpen {
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #94a3b8;
+}
+
+.routeTypeOpen:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.routeTypeIndicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
