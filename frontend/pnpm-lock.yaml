@@ -8,28 +8,25 @@ importers:
 
   .:
     dependencies:
+      '@react-google-maps/api':
+        specifier: ^2.20.6
+        version: 2.20.8(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       firebase:
         specifier: ^12.14.0
         version: 12.14.0
-      leaflet:
-        specifier: ^1.9.4
-        version: 1.9.4
       react:
         specifier: ^19.2.6
         version: 19.2.6
       react-dom:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
-      react-leaflet:
-        specifier: ^5.0.0
-        version: 5.0.0(leaflet@1.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.4.0)
-      '@types/leaflet':
-        specifier: ^1.9.21
-        version: 1.9.21
+      '@types/google.maps':
+        specifier: ^3.58.1
+        version: 3.65.0
       '@types/node':
         specifier: ^24.12.3
         version: 24.12.4
@@ -391,6 +388,12 @@ packages:
   '@firebase/webchannel-wrapper@1.0.6':
     resolution: {integrity: sha512-Vr/Mqu79dMwGRAyGbJ4uN4+BtXB3/mRTdzetD1daWNeG8QaWuzhhbG77GltO5c0yYmYls8i250iX73624GJd7Q==}
 
+  '@googlemaps/js-api-loader@1.16.8':
+    resolution: {integrity: sha512-CROqqwfKotdO6EBjZO/gQGVTbeDps5V7Mt9+8+5Q+jTg5CRMi3Ii/L9PmV3USROrt2uWxtGzJHORmByxyo9pSQ==}
+
+  '@googlemaps/markerclusterer@2.5.3':
+    resolution: {integrity: sha512-x7lX0R5yYOoiNectr10wLgCBasNcXFHiADIBdmn7jQllF2B5ENQw5XtZK+hIw4xnV0Df0xhN4LN98XqA5jaiOw==}
+
   '@grpc/grpc-js@1.9.16':
     resolution: {integrity: sha512-wE4Ut/olIzfKqp631XrG+wbF0v1vWFN4YL9FyXC2LJiG33DsV7PLzURjrCvY/6je2ntdRkeLpPDluzSRGaVltQ==}
     engines: {node: ^8.13.0 || >=10.10.0}
@@ -475,12 +478,17 @@ packages:
   '@protobufjs/utf8@1.1.1':
     resolution: {integrity: sha512-oOAWABowe8EAbMyWKM0tYDKi8Yaox52D+HWZhAIJqQXbqe0xI/GV7FhLWqlEKreMkfDjshR5FKgi3mnle0h6Eg==}
 
-  '@react-leaflet/core@3.0.0':
-    resolution: {integrity: sha512-3EWmekh4Nz+pGcr+xjf0KNyYfC3U2JjnkWsh0zcqaexYqmmB5ZhH37kz41JXGmKzpaMZCnPofBBm64i+YrEvGQ==}
+  '@react-google-maps/api@2.20.8':
+    resolution: {integrity: sha512-wtLYFtCGXK3qbIz1H5to3JxbosPnKsvjDKhqGylXUb859EskhzR7OpuNt0LqdLarXUtZCJTKzPn3BNaekNIahg==}
     peerDependencies:
-      leaflet: ^1.9.0
-      react: ^19.0.0
-      react-dom: ^19.0.0
+      react: ^16.8 || ^17 || ^18 || ^19
+      react-dom: ^16.8 || ^17 || ^18 || ^19
+
+  '@react-google-maps/infobox@2.20.0':
+    resolution: {integrity: sha512-03PJHjohhaVLkX6+NHhlr8CIlvUxWaXhryqDjyaZ8iIqqix/nV8GFdz9O3m5OsjtxtNho09F/15j14yV0nuyLQ==}
+
+  '@react-google-maps/marker-clusterer@2.20.0':
+    resolution: {integrity: sha512-tieX9Va5w1yP88vMgfH1pHTacDQ9TgDTjox3tLlisKDXRQWdjw+QeVVghhf5XqqIxXHgPdcGwBvKY6UP+SIvLw==}
 
   '@rolldown/binding-android-arm64@1.0.1':
     resolution: {integrity: sha512-fJI3I0r3C3Oj/zdBCpaCmBRZYf07xpaq4yCfDDoSFm+beWNzbIl26puW8RraUdugoJw/95zerNOn6jasAhzSmg==}
@@ -589,14 +597,14 @@ packages:
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
-  '@types/geojson@7946.0.16':
-    resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
+  '@types/google.maps@3.58.1':
+    resolution: {integrity: sha512-X9QTSvGJ0nCfMzYOnaVs/k6/4L+7F5uCS+4iUmkLEls6J9S/Phv+m/i3mDeyc49ZBgwab3EFO1HEoBY7k98EGQ==}
+
+  '@types/google.maps@3.65.0':
+    resolution: {integrity: sha512-u4SHiRC3m27lPa4vDBxh2AI7mDcHcheX6GSHn1Mwi0Gap8/uhM2kFppiFTnWASXLHZO+1ahHciLeEIV+Sjqk/A==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-
-  '@types/leaflet@1.9.21':
-    resolution: {integrity: sha512-TbAd9DaPGSnzp6QvtYngntMZgcRk+igFELwR2N99XZn7RXUdKgsXMR+28bUO0rPsWp8MIu/f47luLIQuSLYv/w==}
 
   '@types/node@24.12.4':
     resolution: {integrity: sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA==}
@@ -912,6 +920,9 @@ packages:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
     engines: {node: '>=0.8.19'}
 
+  invariant@2.2.4:
+    resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
+
   is-extglob@2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
     engines: {node: '>=0.10.0'}
@@ -949,11 +960,11 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  kdbush@4.1.0:
+    resolution: {integrity: sha512-e9vurzrXJQrFX6ckpHP3bvj5l+9CnYzkxDNnNQ1h2QTqdWsUAJgXiKdGNcOa1EY85dU8KbQ+z/FdQdB7P+9yfQ==}
+
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
-
-  leaflet@1.9.4:
-    resolution: {integrity: sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -1043,6 +1054,10 @@ packages:
   long@5.3.2:
     resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
 
+  loose-envify@1.4.0:
+    resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
+    hasBin: true
+
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
@@ -1112,13 +1127,6 @@ packages:
     peerDependencies:
       react: ^19.2.6
 
-  react-leaflet@5.0.0:
-    resolution: {integrity: sha512-CWbTpr5vcHw5bt9i4zSlPEVQdTVcML390TjeDG0cK59z1ylexpqC6M1PJFjV8jD7CF+ACBFsLIDs6DRMoLEofw==}
-    peerDependencies:
-      leaflet: ^1.9.0
-      react: ^19.0.0
-      react-dom: ^19.0.0
-
   react@19.2.6:
     resolution: {integrity: sha512-sfWGGfavi0xr8Pg0sVsyHMAOziVYKgPLNrS7ig+ivMNb3wbCBw3KxtflsGBAwD3gYQlE/AEZsTLgToRrSCjb0Q==}
     engines: {node: '>=0.10.0'}
@@ -1166,6 +1174,9 @@ packages:
   strip-ansi@6.0.1:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
+
+  supercluster@8.0.1:
+    resolution: {integrity: sha512-IiOea5kJ9iqzD2t7QJq/cREyLHTtSmUT6gQsweojg9WH2sYJqZK9SswTu6jrscO6D1G5v5vYZ9ru/eq85lXeZQ==}
 
   tinyglobby@0.2.16:
     resolution: {integrity: sha512-pn99VhoACYR8nFHhxqix+uvsbXineAasWm5ojXoN8xEwK5Kd3/TrhNn1wByuD52UxWRLy8pu+kRMniEi6Eq9Zg==}
@@ -1775,6 +1786,13 @@ snapshots:
 
   '@firebase/webchannel-wrapper@1.0.6': {}
 
+  '@googlemaps/js-api-loader@1.16.8': {}
+
+  '@googlemaps/markerclusterer@2.5.3':
+    dependencies:
+      fast-deep-equal: 3.1.3
+      supercluster: 8.0.1
+
   '@grpc/grpc-js@1.9.16':
     dependencies:
       '@grpc/proto-loader': 0.7.15
@@ -1853,11 +1871,20 @@ snapshots:
 
   '@protobufjs/utf8@1.1.1': {}
 
-  '@react-leaflet/core@3.0.0(leaflet@1.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
+  '@react-google-maps/api@2.20.8(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
     dependencies:
-      leaflet: 1.9.4
+      '@googlemaps/js-api-loader': 1.16.8
+      '@googlemaps/markerclusterer': 2.5.3
+      '@react-google-maps/infobox': 2.20.0
+      '@react-google-maps/marker-clusterer': 2.20.0
+      '@types/google.maps': 3.58.1
+      invariant: 2.2.4
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
+
+  '@react-google-maps/infobox@2.20.0': {}
+
+  '@react-google-maps/marker-clusterer@2.20.0': {}
 
   '@rolldown/binding-android-arm64@1.0.1':
     optional: true
@@ -1919,13 +1946,11 @@ snapshots:
 
   '@types/estree@1.0.9': {}
 
-  '@types/geojson@7946.0.16': {}
+  '@types/google.maps@3.58.1': {}
+
+  '@types/google.maps@3.65.0': {}
 
   '@types/json-schema@7.0.15': {}
-
-  '@types/leaflet@1.9.21':
-    dependencies:
-      '@types/geojson': 7946.0.16
 
   '@types/node@24.12.4':
     dependencies:
@@ -2281,6 +2306,10 @@ snapshots:
 
   imurmurhash@0.1.4: {}
 
+  invariant@2.2.4:
+    dependencies:
+      loose-envify: 1.4.0
+
   is-extglob@2.1.1: {}
 
   is-fullwidth-code-point@3.0.0: {}
@@ -2303,11 +2332,11 @@ snapshots:
 
   json5@2.2.3: {}
 
+  kdbush@4.1.0: {}
+
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
-
-  leaflet@1.9.4: {}
 
   levn@0.4.1:
     dependencies:
@@ -2370,6 +2399,10 @@ snapshots:
   lodash.camelcase@4.3.0: {}
 
   long@5.3.2: {}
+
+  loose-envify@1.4.0:
+    dependencies:
+      js-tokens: 4.0.0
 
   lru-cache@5.1.1:
     dependencies:
@@ -2442,13 +2475,6 @@ snapshots:
       react: 19.2.6
       scheduler: 0.27.0
 
-  react-leaflet@5.0.0(leaflet@1.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
-    dependencies:
-      '@react-leaflet/core': 3.0.0(leaflet@1.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      leaflet: 1.9.4
-      react: 19.2.6
-      react-dom: 19.2.6(react@19.2.6)
-
   react@19.2.6: {}
 
   require-directory@2.1.1: {}
@@ -2499,6 +2525,10 @@ snapshots:
   strip-ansi@6.0.1:
     dependencies:
       ansi-regex: 5.0.1
+
+  supercluster@8.0.1:
+    dependencies:
+      kdbush: 4.1.0
 
   tinyglobby@0.2.16:
     dependencies:

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react';
-import type { Place } from '../../types';
-import { searchPlaces, type PlaceOption } from '../../services/api';
+import type { Place, PlaceOption } from '../../types';
+import { searchPlaces } from '../../services/api';
 import styles from './Sidebar.module.css';
 
 const MAX_LOCATIONS = 15;
