@@ -111,9 +111,11 @@ export default function Sidebar({
     }
   };
 
-  const handleRemove = (idx: number) => {
-    setLocations(prev => prev.filter((_, i) => i !== idx));
-    if (isOptimized) onClearRoute();
+  const handleRemove = (locToRemove: Place) => {
+    setLocations(prev =>
+      prev.filter(p => !(p.lat === locToRemove.lat && p.lng === locToRemove.lng))
+    );
+    onClearRoute();
   };
 
   const handleClear = () => {
@@ -123,6 +125,8 @@ export default function Sidebar({
     setSuggestions([]);
     setQuery('');
   };
+
+  const displayList = isOptimized ? optimizedRoute : locations;
 
   return (
     <aside className={styles.sidebar}>
@@ -183,32 +187,27 @@ export default function Sidebar({
       {isOptimized && <p className={styles.optimizedLabel}>Optimized route</p>}
 
       <ul className={styles.list}>
-        {(isOptimized ? optimizedRoute : locations).map((loc, idx) => {
-          const originalIdx = isOptimized
-            ? locations.findIndex(p => p.lat === loc.lat && p.lng === loc.lng)
-            : idx;
-          return (
-            <li key={`${loc.lat}-${loc.lng}-${idx}`} className={styles.item}>
-              <span className={`${styles.badge} ${isOptimized ? styles.badgeGreen : styles.badgeBlue}`}>
-                {idx + 1}
-              </span>
-              <span className={styles.itemText} title={loc.address}>
-                {loc.name || loc.address.split(',')[0]}
-                <small className={styles.itemSub}>
-                  {loc.address.split(',').slice(1, 3).join(',')}
-                </small>
-              </span>
-              <button
-                className={styles.removeBtn}
-                onClick={() => handleRemove(originalIdx >= 0 ? originalIdx : idx)}
-                title="Remove"
-                disabled={loading || isOptimized}
-              >
-                ×
-              </button>
-            </li>
-          );
-        })}
+        {displayList.map((loc, idx) => (
+          <li key={`${loc.lat}-${loc.lng}-${idx}`} className={styles.item}>
+            <span className={`${styles.badge} ${isOptimized ? styles.badgeGreen : styles.badgeBlue}`}>
+              {idx + 1}
+            </span>
+            <span className={styles.itemText} title={loc.address}>
+              {loc.name || loc.address.split(',')[0]}
+              <small className={styles.itemSub}>
+                {loc.address.split(',').slice(1, 3).join(',')}
+              </small>
+            </span>
+            <button
+              className={styles.removeBtn}
+              onClick={() => handleRemove(loc)}
+              title="Remove"
+              disabled={loading}
+            >
+              ×
+            </button>
+          </li>
+        ))}
       </ul>
 
       <div className={styles.actions}>
