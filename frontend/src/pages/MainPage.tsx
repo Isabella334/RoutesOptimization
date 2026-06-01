@@ -60,7 +60,7 @@ export default function MainPage({ user }: MainPageProps) {
           totalDistanceKm={totalDistanceKm}
           onSignOut={signOutUser}
         />
-        <MapView locations={locations} optimizedRoute={optimizedRoute} closed={closed} />
+        <MapView locations={locations} optimizedRoute={optimizedRoute} closed={closed} travelMode={travelMode}/>
       </div>
     </div>
   );
