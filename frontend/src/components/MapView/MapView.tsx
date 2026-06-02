@@ -4,22 +4,13 @@ import type { Libraries } from '@react-google-maps/api';
 import type { Place } from '../../types';
 import type { TravelMode } from '../../services/api';
 
-
-const GMAPS_TRAVEL_MODE: Record<TravelMode, google.maps.TravelMode> = {
-  driving: google.maps.TravelMode.DRIVING,
-  walking: google.maps.TravelMode.WALKING,
-  bicycling: google.maps.TravelMode.BICYCLING,
-  transit: google.maps.TravelMode.TRANSIT,
-};
-
-
 const LIBRARIES: Libraries = ['geometry'];
 
-const GUATEMALA_CITY: google.maps.LatLngLiteral = { lat: 14.6349, lng: -90.5069 };
+const GUATEMALA_CITY = { lat: 14.6349, lng: -90.5069 };
 
 const MAP_CONTAINER_STYLE: React.CSSProperties = { height: '100%', width: '100%' };
 
-const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
+const DARK_MAP_STYLES = [
   { elementType: 'geometry', stylers: [{ color: '#1a1f2e' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#8a9bb0' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#0f1117' }] },
@@ -31,7 +22,7 @@ const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
 ];
 
-const MAP_OPTIONS: google.maps.MapOptions = {
+const MAP_OPTIONS = {
   styles: DARK_MAP_STYLES,
   zoomControl: true,
   streetViewControl: false,
@@ -39,14 +30,14 @@ const MAP_OPTIONS: google.maps.MapOptions = {
   fullscreenControl: false,
 };
 
-
-interface MapViewProps {
-  locations: Place[];
-  optimizedRoute: Place[];
-  closed?: boolean;
-  travelMode?: TravelMode;
+function getGmapsTravelMode(mode: TravelMode): google.maps.TravelMode {
+  switch (mode) {
+    case 'walking':   return google.maps.TravelMode.WALKING;
+    case 'bicycling': return google.maps.TravelMode.BICYCLING;
+    case 'transit':   return google.maps.TravelMode.TRANSIT;
+    default:          return google.maps.TravelMode.DRIVING;
+  }
 }
-
 
 function makePinSvg(n: number, isOptimized: boolean): string {
   const bg = isOptimized ? '#10b981' : '#3b82f6';
@@ -62,6 +53,12 @@ function makePinSvg(n: number, isOptimized: boolean): string {
   )}`;
 }
 
+interface MapViewProps {
+  locations: Place[];
+  optimizedRoute: Place[];
+  closed?: boolean;
+  travelMode?: TravelMode;
+}
 
 export default function MapView({ locations, optimizedRoute, closed = true, travelMode = 'driving' }: MapViewProps) {
   const { isLoaded, loadError } = useJsApiLoader({
@@ -70,7 +67,6 @@ export default function MapView({ locations, optimizedRoute, closed = true, trav
   });
 
   const mapRef = useRef<google.maps.Map | null>(null);
-
   const markersRef = useRef<google.maps.Marker[]>([]);
   const routePolyRef = useRef<google.maps.Polyline | null>(null);
   const previewPolyRef = useRef<google.maps.Polyline | null>(null);
@@ -91,13 +87,12 @@ export default function MapView({ locations, optimizedRoute, closed = true, trav
     previewPolyRef.current = null;
   };
 
-
   const isOptimized = optimizedRoute.length > 0;
   const displayPoints = isOptimized ? optimizedRoute : locations;
 
   const displayKey = displayPoints.map(p => `${p.lat},${p.lng}`).join('|');
-  const locKey = locations.map(p => `${p.lat},${p.lng}`).join('|');
-  const routeKey =
+  const locKey     = locations.map(p => `${p.lat},${p.lng}`).join('|');
+  const routeKey   =
     optimizedRoute.length >= 2
       ? optimizedRoute.map(p => `${p.lat},${p.lng}`).join('|') + (closed ? '+C' : '+O') + `+${travelMode}`
       : '';
@@ -143,11 +138,12 @@ export default function MapView({ locations, optimizedRoute, closed = true, trav
 
   useEffect(() => {
     clearRoutePolyline();
+    setRouteWarning(null);
 
     if (!mapRef.current || !routeKey) return;
 
     const stops = closed ? [...optimizedRoute, optimizedRoute[0]] : optimizedRoute;
-    const origin = { lat: stops[0].lat, lng: stops[0].lng };
+    const origin      = { lat: stops[0].lat, lng: stops[0].lng };
     const destination = { lat: stops[stops.length - 1].lat, lng: stops[stops.length - 1].lng };
     const waypoints: google.maps.DirectionsWaypoint[] = stops.slice(1, -1).map(p => ({
       location: { lat: p.lat, lng: p.lng },
@@ -155,7 +151,7 @@ export default function MapView({ locations, optimizedRoute, closed = true, trav
     }));
 
     new google.maps.DirectionsService().route(
-      { origin, destination, waypoints, travelMode: GMAPS_TRAVEL_MODE[travelMode], optimizeWaypoints: false },
+      { origin, destination, waypoints, travelMode: getGmapsTravelMode(travelMode), optimizeWaypoints: false },
       (result, status) => {
         if (!mapRef.current) return;
 
